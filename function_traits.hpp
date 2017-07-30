@@ -12,14 +12,14 @@ namespace FUNCTION_TRAITS_NAMESPACE {
     template<typename Pointer, typename Result, typename... Params>
     struct basic_function_traits {
 
-        using result = Result;
+        using result_t = Result;
 
-        using pointer = Pointer;
+        using function_t = Pointer;
 
-        using parameters = std::tuple<Params...>;
+        using tuple_t = std::tuple<Params...>;
 
         template<unsigned N>
-        using parameter = typename std::tuple_element<N,parameters>::type;
+        using parameter_t = typename std::tuple_element<N,tuple_t>::type;
 
         enum { parameter_count = sizeof...(Params) };
 
@@ -27,12 +27,21 @@ namespace FUNCTION_TRAITS_NAMESPACE {
 
     //--------------------------------------------------------------------------
 
-    template<typename>
-    struct function_traits;
+    template<typename Struct>
+    struct function_traits
+    : function_traits<decltype(&Struct::operator())> {};
+
+    template<typename Struct, typename Result, typename... Args>
+    struct function_traits<Result(Struct::*)(Args...)>
+    : function_traits<Result(*)(Args...)> {};
+
+    template<typename Struct, typename Result, typename... Args>
+    struct function_traits<Result(Struct::*)(Args...) const>
+    : function_traits<Result(*)(Args...)> {};
 
     template<typename R, typename... Params>
     struct function_traits<R(Params...)>
-    : basic_function_traits<R(*)(Params...),R,Params...> {};
+    : function_traits<R(*)(Params...)> {};
 
     template<typename R, typename... Params>
     struct function_traits<R(*)(Params...)>
@@ -132,30 +141,30 @@ namespace FUNCTION_TRAITS_NAMESPACE {
     //--------------------------------------------------------------------------
 
     template<typename Fn>
-    using function_t = typename function_traits<Fn>::pointer;
+    using function_t = typename function_traits<Fn>::function_t;
 
     template<typename Fn>
-    using cdecl_t = typename cdecl_traits<Fn>::pointer;
+    using cdecl_t = typename cdecl_traits<Fn>::function_t;
 
     template<typename Fn>
-    using fastcall_t = typename fastcall_traits<Fn>::pointer;
+    using fastcall_t = typename fastcall_traits<Fn>::function_t;
 
     template<typename Fn>
-    using stdcall_t = typename stdcall_traits<Fn>::pointer;
+    using stdcall_t = typename stdcall_traits<Fn>::function_t;
 
     template<typename Fn>
-    using thiscall_t = typename thiscall_traits<Fn>::pointer;
+    using thiscall_t = typename thiscall_traits<Fn>::function_t;
 
     template<typename Fn>
-    using vectorcall_t = typename vectorcall_traits<Fn>::pointer;
+    using vectorcall_t = typename vectorcall_traits<Fn>::function_t;
 
     //--------------------------------------------------------------------------
 
     template<typename Fn>
-    using result_t = typename function_traits<Fn>::result;
+    using result_t = typename function_traits<Fn>::result_t;
 
     template<unsigned N,typename Fn>
-    using parameter_t = typename function_traits<Fn>::template parameter<N>;
+    using parameter_t = typename function_traits<Fn>::template parameter_t<N>;
 
 #ifdef FUNCTION_TRAITS_NAMESPACE
 } // namespace FUNCTION_TRAITS_NAMESPACE
