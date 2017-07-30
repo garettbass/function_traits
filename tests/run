@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -e
+tests="$(cd "$(dirname "$0")" && pwd)"
+
+rm -f "$tests/test.exe"
+
+CXX="c++ -std=c++11 -Wall"
+$CXX "$tests/test.cpp" -o "$tests/test.exe"
+
+(cd "$tests" && "./test.exe")
+
+rm -f "$tests/test.exe"
